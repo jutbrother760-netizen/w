@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>M.N.GSM Code Viewer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/theme/material-darker.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            overflow-x: hidden;
+            height: 100vh;
+            position: fixed;
+            width: 100%;
+        }
+        .CodeMirror {
+            height: 100%;
+            background: #2d2d30;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            border-radius: 12px;
+        }
+        .CodeMirror-gutters { background: #2d2d30; border: none; }
+        .tab-indicator {
+            height: 3px;
+            background: #fff;
+            position: absolute;
+            bottom: 0;
+            transition: all 0.3s ease;
+        }
+        .editor-section {
+            background: #2d2d30;
+            border-radius: 12px;
+            height: 100%;
+            overflow: hidden;
+        }
+        .preview-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #fff;
+            border-radius: 12px;
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #4a4a4a; border-radius: 3px; }
+        .bottom-nav {
+            background: #1a1a1a;
+            border-top: 1px solid #333;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            color: #888;
+            transition: color 0.2s;
+        }
+        .nav-item.active { color: #fff; }
+        .nav-item svg { width: 24px; height: 24px; margin-bottom: 4px; }
+        .nav-item span { font-size: 11px; }
+    </style>
+</head>
+<body>
+    <!-- Main Container -->
+    <div class="flex flex-col h-screen bg-[#1a1a1a]">
+        <!-- Header -->
+        <header class="flex items-center justify-between px-4 py-3 bg-[#1a1a1a]">
+            <button onclick="goBack()" class="p-2">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            <h1 class="text-lg font-medium">Editor</h1>
+            <div class="w-10"></div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="flex-1 overflow-y-auto px-4 pb-4" id="mainContent">
+            <!-- HTML Editor -->
+            <div class="mb-4">
+                <div class="flex mb-3 relative">
+                    <button class="flex-1 py-2 text-sm font-medium tab-btn active" data-lang="html" onclick="switchTab(this, 'html1')">HTML</button>
+                    <button class="flex-1 py-2 text-sm font-medium text-gray-500 tab-btn" data-lang="css" onclick="switchTab(this, 'css1')">CSS</button>
+                    <button class="flex-1 py-2 text-sm font-medium text-gray-500 tab-btn" data-lang="js" onclick="switchTab(this, 'js1')">JS</button>
+                    <div class="tab-indicator" style="width: 33.33%; left: 0;"></div>
+                </div>
+                <div class="editor-section" style="height: 180px;">
+                    <textarea id="html1" class="hidden"></textarea>
+                    <textarea id="css1" class="hidden"></textarea>
+                    <textarea id="js1" class="hidden"></textarea>
+                </div>
+            </div>
+
+            <!-- CSS Editor -->
+            <div class="mb-4">
+                <div class="flex mb-3 relative">
+                    <button class="flex-1 py-2 text-sm font-medium text-gray-500 tab-btn" data-lang="html" onclick="switchTab(this, 'html2')">HTML</button>
+                    <button class="flex-1 py-2 text-sm font-medium tab-btn active" data-lang="css" onclick="switchTab(this, 'css2')">CSS</button>
+                    <button class="flex-1 py-2 text-sm font-medium text-gray-500 tab-btn" data-lang="js" onclick="switchTab(this, 'js2')">JS</button>
+                    <div class="tab-indicator" style="width: 33.33%; left: 33.33%;"></div>
+                </div>
+                <div class="editor-section" style="height: 180px;">
+                    <textarea id="html2" class="hidden"></textarea>
+                    <textarea id="css2" class="hidden"></textarea>
+                    <textarea id="js2" class="hidden"></textarea>
+                </div>
+            </div>
+
+            <!-- JS Editor -->
+            <div class="mb-4">
+                <div class="flex mb-3 relative">
+                    <button class="flex-1 py-2 text-sm font-medium text-gray-500 tab-btn" data-lang="html" onclick="switchTab(this, 'html3')">HTML</button>
+                    <button class="flex-1 py-2 text-sm font-medium text-gray-500 tab-btn" data-lang="css" onclick="switchTab(this, 'css3')">CSS</button>
+                    <button class="flex-1 py-2 text-sm font-medium tab-btn active" data-lang="js" onclick="switchTab(this, 'js3')">JS</button>
+                    <div class="tab-indicator" style="width: 33.33%; left: 66.66%;"></div>
+                </div>
+                <div class="editor-section" style="height: 180px;">
+                    <textarea id="html3" class="hidden"></textarea>
+                    <textarea id="css3" class="hidden"></textarea>
+                    <textarea id="js3" class="hidden"></textarea>
+                </div>
+            </div>
+
+            <!-- Preview Section -->
+            <div class="mb-20">
+                <h2 class="text-lg font-medium mb-3">Preview</h2>
+                <div class="bg-[#2d2d30] rounded-xl p-3" style="height: 400px;">
+                    <iframe id="preview" class="preview-frame" sandbox="allow-scripts allow-same-origin"></iframe>
+                </div>
+                <button onclick="openInBrowser()" class="w-full mt-3 py-3 bg-[#2d2d30] rounded-xl text-center font-medium">
+                    Open in Browser
+                </button>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav fixed bottom-0 left-0 right-0">
+            <div class="flex justify-around">
+                <button class="nav-item active" onclick="switchView('editor')">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                    </svg>
+                    <span>Editor</span>
+                </button>
+                <button class="nav-item" onclick="switchView('files')">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                    </svg>
+                    <span>Files</span>
+                </button>
+                <button class="nav-item" onclick="switchView('settings')">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    <span>Settings</span>
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Load CodeMirror -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/htmlmixed/htmlmixed.min.js"></script>
+
+    <script>
+        // Store code content
+        const codeContent = {
+            html: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M.N.GSM Demo</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome!</h1>
+        <p>Start coding now</p>
+        <button onclick="showAlert()">Click Me</button>
+    </div>
+</body>
+</html>`,
+            css: `* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.container {
+    background: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+h1 {
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+button {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 1rem;
+}
+
+button:hover {
+    background: #5a67d8;
+}`,
+            js: `console.log('App initialized!');
+
+function showAlert() {
+    alert('Hello from M.N.GSM Code Viewer!');
+    console.log('Button clicked at:', new Date().toLocaleTimeString());
+}`
+        };
+
+        // Initialize CodeMirror editors
+        const editors = {};
+        const editorConfig = {
+            theme: 'material-darker',
+            lineNumbers: true,
+            lineWrapping: true,
+            autoCloseBrackets: true,
+            matchBrackets: true,
+            indentUnit: 2,
+            tabSize: 2,
+            autofocus: false
+        };
+
+        // Initialize all editors
+        function initEditors() {
+            // HTML editors
+            editors.html1 = CodeMirror.fromTextArea(document.getElementById('html1'), {
+                ...editorConfig,
+                mode: 'htmlmixed',
+                value: codeContent.html
+            });
+            editors.html2 = CodeMirror.fromTextArea(document.getElementById('html2'), {
+                ...editorConfig,
+                mode: 'htmlmixed',
+                value: codeContent.html
+            });
+            editors.html3 = CodeMirror.fromTextArea(document.getElementById('html3'), {
+                ...editorConfig,
+                mode: 'htmlmixed',
+                value: codeContent.html
+            });
+
+            // CSS editors
+            editors.css1 = CodeMirror.fromTextArea(document.getElementById('css1'), {
+                ...editorConfig,
+                mode: 'css',
+                value: codeContent.css
+            });
+            editors.css2 = CodeMirror.fromTextArea(document.getElementById('css2'), {
+                ...editorConfig,
+                mode: 'css',
+                value: codeContent.css
+            });
+            editors.css3 = CodeMirror.fromTextArea(document.getElementById('css3'), {
+                ...editorConfig,
+                mode: 'css',
+                value: codeContent.css
+            });
+
+            // JS editors
+            editors.js1 = CodeMirror.fromTextArea(document.getElementById('js1'), {
+                ...editorConfig,
+                mode: 'javascript',
+                value: codeContent.js
+            });
+            editors.js2 = CodeMirror.fromTextArea(document.getElementById('js2'), {
+                ...editorConfig,
+                mode: 'javascript',
+                value: codeContent.js
+            });
+            editors.js3 = CodeMirror.fromTextArea(document.getElementById('js3'), {
+                ...editorConfig,
+                mode: 'javascript',
+                value: codeContent.js
+            });
+
+            // Set initial values and hide non-active editors
+            Object.keys(editors).forEach(key => {
+                const lang = key.replace(/[0-9]/g, '');
+                editors[key].setValue(codeContent[lang]);
+                editors[key].on('change', () => updateCode(lang, editors[key].getValue()));
+                
+                // Hide non-active editors initially
+                if (key !== 'html1' && key !== 'css2' && key !== 'js3') {
+                    editors[key].getWrapperElement().style.display = 'none';
+                }
+            });
+        }
+
+        // Switch tabs
+        function switchTab(button, editorId) {
+            const parent = button.parentElement;
+            const indicator = parent.querySelector('.tab-indicator');
+            const buttons = parent.querySelectorAll('.tab-btn');
+            const section = parent.nextElementSibling;
+            
+            // Update button states
+            buttons.forEach((btn, index) => {
+                btn.classList.toggle('active', btn === button);
+                btn.classList.toggle('text-gray-500', btn !== button);
+                if (btn === button) {
+                    indicator.style.left = `${index * 33.33}%`;
+                }
+            });
+
+            // Show/hide editors
+            const sectionNum = editorId.slice(-1);
+            ['html', 'css', 'js'].forEach(lang => {
+                const editor = editors[`${lang}${sectionNum}`];
+                if (editor) {
+                    const wrapper = editor.getWrapperElement();
+                    wrapper.style.display = editorId.startsWith(lang) ? 'block' : 'none';
+                    if (editorId.startsWith(lang)) {
+                        editor.refresh();
+                    }
+                }
+            });
+        }
+
+        // Update code content
+        function updateCode(lang, value) {
+            codeContent[lang] = value;
+            // Sync all editors of the same language
+            ['1', '2', '3'].forEach(num => {
+                const editor = editors[`${lang}${num}`];
+                if (editor && editor.getValue() !== value) {
+                    editor.setValue(value);
+                }
+            });
+            updatePreview();
+        }
+
+        // Update preview
+        function updatePreview() {
+            const preview = document.getElementById('preview');
+            const html = codeContent.html;
+            const css = `<style>${codeContent.css}</style>`;
+            const js = `<script>${codeContent.js}<\/script>`;
+            
+            const content = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    ${css}
+                </head>
+                <body>
+                    ${html.replace(/<\/?html[^>]*>/gi, '').replace(/<\/?head[^>]*>/gi, '').replace(/<\/?body[^>]*>/gi, '').replace(/<meta[^>]*>/gi, '').replace(/<title[^>]*>.*?<\/title>/gi, '')}
+                    ${js}
+                </body>
+                </html>
+            `;
+            
+            preview.srcdoc = content;
+        }
+
+        // Navigation functions
+        function goBack() {
+            console.log('Go back');
+        }
+
+        function openInBrowser() {
+            const content = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Preview</title>
+                    <style>${codeContent.css}</style>
+                </head>
+                <body>
+                    ${codeContent.html.replace(/<\/?html[^>]*>/gi, '').replace(/<\/?head[^>]*>/gi, '').replace(/<\/?body[^>]*>/gi, '')}
+                    <script>${codeContent.js}<\/script>
+                </body>
+                </html>
+            `;
+            
+            const blob = new Blob([content], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_blank');
+        }
+
+        function switchView(view) {
+            // Update navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            // Handle view switching
+            console.log('Switching to:', view);
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            initEditors();
+            updatePreview();
+        });
+
+        // Prevent zoom on double tap
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+    </script>
+</body>
+</html>
